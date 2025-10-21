@@ -53,3 +53,7 @@ tmp/
 temp/
 *.tmp
 
+# Input/Output files
+inputs/
+outputs/
+
