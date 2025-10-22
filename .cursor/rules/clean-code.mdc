@@ -1,0 +1,51 @@
+---
+description: Python code cleaning and linting standards
+alwaysApply: false
+---
+
+# Python Clean Code Standards
+
+## Code Quality
+
+- Remove all print statements except for error logging
+- Resolve all flake8, pylint, mypy, and black warnings/errors
+- Remove unused imports and variables
+- Use meaningful variable and function names following snake_case convention
+
+## Python-Specific Formatting
+
+- Follow PEP 8 style guidelines
+- Use black formatter for consistent formatting
+- Maximum line length of 88 characters (black default)
+- Use double quotes for strings consistently
+- Remove trailing whitespace
+
+## Python Best Practices
+
+- Add type hints for all function parameters and return types
+- Use f-strings for string formatting instead of .format() or %
+- Prefer list/dict comprehensions over loops when readable
+- Use pathlib.Path instead of os.path for file operations
+- Follow user rule: no comments except for really hard/complex code
+
+## Error Handling & Logging
+
+- Log only errors (following user rule)
+- Use proper exception types and messages
+- Handle exceptions with specific except clauses, avoid bare except:
+- Use logging module instead of print for error messages
+
+## Imports & Dependencies
+
+- Group imports: standard library, third-party, local imports
+- Use absolute imports when possible
+- Remove unused imports (isort + autoflake)
+
+## Final Python Checklist
+
+- [ ] All linting errors resolved (flake8, pylint, mypy)
+- [ ] Black formatting applied
+- [ ] No unused imports or variables
+- [ ] Type hints added where needed
+- [ ] Error handling follows logging standards
+- [ ] PEP 8 compliance verified

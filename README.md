@@ -15,6 +15,38 @@ Edit `.env` and add your API keys and environment variables.
 
 ## Usage
 
+### Port Forward Services
+
+Port-forward Kubernetes services from staging/production and generate environment files:
+
+```bash
+python scripts/devops/port_forward_services.py service1 [service2 ...] [--prod] [--color COLOR] [--background]
+```
+
+This script will:
+
+- Check AWS SSO authentication (prompts login if needed)
+- Port-forward specified services from Kubernetes clusters
+- Generate environment files with `SERVICE_NAME_URL=http://localhost:PORT` format
+- Handle both service name formats: `catalog_ms` or `catalog-ms`
+- Support color prefixing for multi-environment deployments
+
+Examples:
+
+```bash
+# Forward staging services (default)
+python scripts/devops/port_forward_services.py catalog_ms users-ms
+
+# Forward production service (requires confirmation)
+python scripts/devops/port_forward_services.py catalog_ms --prod
+
+# Forward services with color prefix
+python scripts/devops/port_forward_services.py --color blue services-ms users-ms
+
+# Run in background mode
+python scripts/devops/port_forward_services.py catalog-ms --background
+```
+
 ### Copy Schema Forms
 
 Copy a data schema and all its forms from an input schema to an output schema, with form keys prefixed with "docoloco-":
