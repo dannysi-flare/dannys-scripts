@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
@@ -29,7 +30,12 @@ def load_tokens(tokens_file: str) -> dict:
         return json.load(f)
 
 
-def generate_draft(document_path: str, tokens_path: str, output_path: str):
+def generate_draft(
+    document_path: str,
+    tokens_path: str,
+    output_path: str,
+    jsonata_path: Optional[str] = None,
+):
     if not API_KEY:
         logger.error("X_API_KEY not found in environment variables")
         sys.exit(1)
@@ -47,13 +53,15 @@ def generate_draft(document_path: str, tokens_path: str, output_path: str):
         payload = {
             "base64Content": base64_content,
             "tokens": tokens,
-            "format": "DOCX"
+            "format": "E_FORM",
+            "options": {"isSkipEformFlattening": True},
         }
 
-        headers = {
-            "Content-Type": "application/json",
-            "x-api-key": API_KEY
-        }
+        if jsonata_path:
+            base64_jsonata = encode_file_to_base64(jsonata_path)
+            payload["base64Jsonata"] = base64_jsonata
+
+        headers = {"Content-Type": "application/json", "x-api-key": API_KEY}
 
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
@@ -85,14 +93,18 @@ def main():
     parser.add_argument("document", help="Path to input document file")
     parser.add_argument("tokens", help="Path to JSON file containing tokens")
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default="outputs/Generated Petition.docx",
-        help="Output file path (default: outputs/Generated Petition.docx)"
+        help="Output file path (default: outputs/Generated Petition.docx)",
+    )
+    parser.add_argument(
+        "-j", "--jsonata", help="Path to JSONata transformation file (optional)"
     )
 
     args = parser.parse_args()
 
-    generate_draft(args.document, args.tokens, args.output)
+    generate_draft(args.document, args.tokens, args.output, args.jsonata)
 
 
 if __name__ == "__main__":
