@@ -453,6 +453,31 @@ class TestScenarioGenerator:
         else:
             raise Exception(f"Failed to create service: {response.text}")
 
+    def generate_bearer_token(
+        self, user_id: str, marble_id: str
+    ) -> str:
+        """Generate bearer token for a user"""
+        try:
+            response = self.session.post(
+                f"{AUTH_MS_URL}/auth/tokenize",
+                json={
+                    "id": user_id,
+                    "marbleId": marble_id,
+                    "sessionType": "TOKEN"
+                }
+            )
+            if response.status_code == 201:
+                return response.text
+            else:
+                logger.error(
+                    f"Failed to generate token: "
+                    f"{response.status_code} - {response.text}"
+                )
+                return "Token generation failed"
+        except Exception as e:
+            logger.error(f"Error generating token: {e}")
+            return "Token generation failed"
+
     def verify_mongo_data(self, entities: Dict[str, Any]):
         """Verify entities exist in MongoDB"""
         if not self.mongo_client:
@@ -517,6 +542,20 @@ class TestScenarioGenerator:
                 print(f"❌ Service creation failed: {e}")
                 service = {"id": "failed", "name": "Service creation failed"}
 
+            # Generate bearer tokens for customer and attorney
+            print("\n🔑 Generating bearer tokens...")
+            customer_token = self.generate_bearer_token(
+                customer['id'],
+                customer['marbleId']
+            )
+            print(f"✅ Customer bearer token generated")
+
+            attorney_token = self.generate_bearer_token(
+                attorney['id'],
+                attorney['marbleId']
+            )
+            print(f"✅ Attorney bearer token generated")
+
             entities = {
                 'practice_area': practice_area,
                 'paralegal': paralegal,
@@ -524,7 +563,9 @@ class TestScenarioGenerator:
                 'customer': customer,
                 'case': case,
                 'service_type': service_type,
-                'service': service
+                'service': service,
+                'customer_token': customer_token,
+                'attorney_token': attorney_token
             }
 
             self.print_summary(entities)
@@ -578,6 +619,10 @@ class TestScenarioGenerator:
                 f"Service:       {entities['service']['id']} "
                 f"({entities['service']['name']})"
             ),
+            "",
+            "Bearer Tokens:",
+            f"Customer Token: {entities.get('customer_token', 'N/A')}",
+            f"Attorney Token: {entities.get('attorney_token', 'N/A')}",
             "=" * 50
         ]
         print("\n".join(summary_lines))
