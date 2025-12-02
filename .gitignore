@@ -56,4 +56,5 @@ temp/
 # Input/Output files
 inputs/
 outputs/
+jsonata_documents/
 

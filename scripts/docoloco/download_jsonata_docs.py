@@ -14,15 +14,22 @@ import os
 import re
 from pymongo import MongoClient
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from collections import defaultdict
+from dotenv import load_dotenv
 
-# MongoDB connection string
-MONGO_URI = "mongodb+srv://node:marblerules1@marble-stg.jycnt.mongodb.net/marble"
+# Load environment variables
+load_dotenv()
+
+# MongoDB connection string from environment
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("MONGO_URI environment variable is not set. Please check your .env file.")
+
 DATABASE_NAME = "draft-architect"
 COLLECTION_NAME = "document_jsonata"
 
-def parse_ca_name(name: str) -> Tuple[int, bool]:
+def parse_ca_name(name: str) -> Optional[Tuple[int, bool]]:
     """
     Parse CA document name to extract number and response flag.
 
