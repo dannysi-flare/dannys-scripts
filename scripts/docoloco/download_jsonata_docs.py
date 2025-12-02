@@ -29,44 +29,65 @@ if not MONGO_URI:
 DATABASE_NAME = "draft-architect"
 COLLECTION_NAME = "document_jsonata"
 
-def parse_ca_name(name: str) -> Optional[Tuple[int, bool]]:
+def parse_ca_name(name: str) -> Optional[Tuple[int, bool, Optional[str]]]:
     """
-    Parse CA document name to extract number and response flag.
+    Parse CA document name to extract number, response flag, and variant.
 
     Examples:
-        CA: FL 100 Divorce Petition -> (100, False)
-        CA RE: FL 105 UCCJEA Response -> (105, True)
-        CA: FL 110 Summons -> (110, False)
+        CA: FL 100 Divorce Petition -> (100, False, None)
+        CA RE: FL 105 UCCJEA Response -> (105, True, None)
+        CA: FL 160 JOINT Property -> (160, False, "joint")
+        CA: FL 160 SOLO Property -> (160, False, "solo")
+        CA RE: FL 160 JOINT Property Response -> (160, True, "joint")
+        CA RE: FL 160 SOLO Property Response -> (160, True, "solo")
 
     Returns:
-        Tuple of (number, is_response) or None if cannot parse
+        Tuple of (number, is_response, variant) or None if cannot parse
+        variant is "joint", "solo", or None
     """
     # Check if it's a response document (contains "RE:" or ends with "Response")
     is_response = "RE:" in name.upper() or name.strip().endswith("Response")
 
     # Extract FL number - look for pattern "FL <number>"
     match = re.search(r'FL\s+(\d+)', name, re.IGNORECASE)
-    if match:
-        number = int(match.group(1))
-        return (number, is_response)
+    if not match:
+        return None
 
-    return None
+    number = int(match.group(1))
 
-def generate_filename(number: int, is_response: bool) -> str:
+    # For FL-160, check for JOINT or SOLO variant
+    variant = None
+    if number == 160:
+        if "JOINT" in name.upper():
+            variant = "joint"
+        elif "SOLO" in name.upper():
+            variant = "solo"
+
+    return (number, is_response, variant)
+
+def generate_filename(number: int, is_response: bool, variant: Optional[str] = None) -> str:
     """
-    Generate filename according to convention: fl-<number>(-response)?.jsonata
+    Generate filename according to convention: fl-<number>(-variant)?(-response)?.jsonata
 
     Args:
         number: Document number
         is_response: Whether this is a response document
+        variant: Optional variant (e.g., "joint", "solo")
 
     Returns:
         Generated filename
+
+    Examples:
+        fl-100.jsonata
+        fl-160-joint.jsonata
+        fl-160-solo-response.jsonata
     """
+    parts = [f"fl-{number}"]
+    if variant:
+        parts.append(variant)
     if is_response:
-        return f"fl-{number}-response.jsonata"
-    else:
-        return f"fl-{number}.jsonata"
+        parts.append("response")
+    return f"{'-'.join(parts)}.jsonata"
 
 def download_documents():
     """
@@ -88,17 +109,17 @@ def download_documents():
         print("No documents found. Exiting.")
         return
 
-    # Group documents by their base identity (number + is_response)
-    # Key: (number, is_response), Value: list of documents
-    grouped_docs: Dict[Tuple[int, bool], List[dict]] = defaultdict(list)
+    # Group documents by their base identity (number + is_response + variant)
+    # Key: (number, is_response, variant), Value: list of documents
+    grouped_docs: Dict[Tuple[int, bool, Optional[str]], List[dict]] = defaultdict(list)
 
     for doc in documents:
         doc_name = doc.get("document_name", "")
         parsed = parse_ca_name(doc_name)
 
         if parsed:
-            number, is_response = parsed
-            grouped_docs[(number, is_response)].append(doc)
+            number, is_response, variant = parsed
+            grouped_docs[(number, is_response, variant)].append(doc)
         else:
             print(f"Warning: Could not parse document name: {doc_name}")
 
@@ -111,11 +132,11 @@ def download_documents():
 
     downloaded_count = 0
 
-    for (number, is_response), docs in sorted(grouped_docs.items()):
+    for (number, is_response, variant), docs in sorted(grouped_docs.items()):
         # Sort by created_at, taking the latest
         latest_doc = max(docs, key=lambda d: d.get("created_at") or datetime.min)
 
-        filename = generate_filename(number, is_response)
+        filename = generate_filename(number, is_response, variant)
         filepath = os.path.join(output_dir, filename)
 
         # Get content
