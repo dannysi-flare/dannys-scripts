@@ -35,6 +35,7 @@ def generate_draft(
     tokens_path: str,
     output_path: str,
     jsonata_path: Optional[str] = None,
+    output_format: str = "DOCX",
 ):
     if not API_KEY:
         logger.error("X_API_KEY not found in environment variables")
@@ -53,7 +54,7 @@ def generate_draft(
         payload = {
             "base64Content": base64_content,
             "tokens": tokens,
-            "format": "E_FORM",
+            "format": output_format,
             "options": {"isSkipEformFlattening": True},
         }
 
@@ -101,10 +102,17 @@ def main():
     parser.add_argument(
         "-j", "--jsonata", help="Path to JSONata transformation file (optional)"
     )
+    parser.add_argument(
+        "-f",
+        "--format",
+        choices=["DOCX", "E_FORM"],
+        default="DOCX",
+        help="Output format: DOCX (default) or E_FORM",
+    )
 
     args = parser.parse_args()
 
-    generate_draft(args.document, args.tokens, args.output, args.jsonata)
+    generate_draft(args.document, args.tokens, args.output, args.jsonata, args.format)
 
 
 if __name__ == "__main__":
