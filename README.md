@@ -169,3 +169,32 @@ python scripts/docoloco/merge_schema_from_sheets.py \
 **First-Time Setup**:
 
 On first run, the script will open your browser for Google OAuth2 authentication. After granting permissions, the script will save a token file (`~/.claude/google-sheets-token.json`) for future use. You won't need to authenticate again unless the token expires or is revoked.
+
+### Fix PDF Form Font Sizes
+
+Fix PDF form templates by setting consistent font sizes across all text fields. This addresses issues where form fields have different font sizes embedded in their Default Appearance (DA), causing inconsistent text rendering when filled programmatically.
+
+```bash
+node scripts/fix_pdf_font_sizes.js <input.pdf> <output.pdf> [fontSize]
+```
+
+**Requirements**: Node.js and pdf-lib. Run from the vinny directory to use its pdf-lib installation, or install globally with `npm install -g pdf-lib`.
+
+**What it does**:
+1. Embeds Helvetica font into the PDF
+2. Sets all text fields to use the same font size (default: 9pt)
+3. Clears existing appearance streams so they regenerate fresh
+4. Updates all field appearances with the embedded font
+
+**Examples**:
+
+```bash
+# Fix FL-105 template with default 9pt font
+cd ~/src/vinny
+node ~/src/dannys-scripts/scripts/fix_pdf_font_sizes.js ~/Downloads/fl105_clean.pdf ~/Downloads/fl105_fixed.pdf
+
+# Fix with custom font size (10pt)
+node ~/src/dannys-scripts/scripts/fix_pdf_font_sizes.js ~/Downloads/fl140.pdf ~/Downloads/fl140_fixed.pdf 10
+```
+
+**Use case**: When CA court eform templates have fields with inconsistent font sizes (e.g., RESPONDENT field renders much larger than other fields), run this script on the source PDF before uploading to S3. The fixed template will render consistently when filled by documents-ms.
