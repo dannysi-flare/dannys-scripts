@@ -124,13 +124,33 @@ def create_csv_row(field_name: str, field_def: Dict[str, Any]) -> List[str]:
     return row
 
 def main():
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description='Convert a JSON schema to CSV')
+    parser.add_argument('input', help='Path to the JSON schema file')
+    parser.add_argument('-o', '--output', help='Path for the output CSV file (default: outputs/<input-basename>.csv)')
+    args = parser.parse_args()
+
+    if not os.path.isfile(args.input):
+        print(f"Error: input file not found: {args.input}")
+        return
+
+    # Determine output path
+    if args.output:
+        output_path = args.output
+    else:
+        base = os.path.splitext(os.path.basename(args.input))[0]
+        output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'outputs')
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{base}.csv")
+
     # Load schema
-    schema_path = '/Users/dannysivan/dannys-scripts/inputs/docoloco-schema.json'
-    schema = load_schema(schema_path)
-    
+    schema = load_schema(args.input)
+
     # Extract all fields
     fields = extract_fields_from_schema(schema)
-    
+
     # Create CSV header
     header = [
         'Izzy Bucket', 'Big Bucket', 'Little Bucket', 'Data Point', 'Description',
@@ -138,34 +158,28 @@ def main():
         'Placeholder text', 'Hint text', 'Selection options (if type = selection)',
         'Required?', 'Validation text (if required)', 'Attorney facing label', 'Notes'
     ]
-    
+
     # Sort fields by bucket order for logical grouping
     bucket_order = ['CLIENT', 'OPPOSING_PARTY', 'MARRIAGE', 'CHILDREN', 'ASSETS', 'CASE_DETAILS', 'ATTORNEY_ONLY', 'PERSONAL_INFORMATION']
-    
+
     def get_bucket_order(field_tuple):
         field_name, field_def = field_tuple
         bucket = field_def.get('flare_bucket', '')
         try:
             return bucket_order.index(bucket)
         except ValueError:
-            return len(bucket_order)  # Put unknown buckets at the end
-    
+            return len(bucket_order)
+
     fields.sort(key=get_bucket_order)
-    
+
     # Generate CSV
-    output_path = '/Users/dannysivan/dannys-scripts/inputs/docoloco-data-points.csv'
-    
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        
-        # Write header
         writer.writerow(header)
-        
-        # Write data rows
         for field_name, field_def in fields:
             row = create_csv_row(field_name, field_def)
             writer.writerow(row)
-    
+
     print(f"CSV generated successfully: {output_path}")
     print(f"Total fields processed: {len(fields)}")
 
