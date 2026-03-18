@@ -4,14 +4,14 @@ Migrate attorney data points to express open cases.
 
 Optimized approach:
 1. Fetches all express service type IDs from catalog (1 call)
-2. For each express service type, fetches all services metadata (25 calls)
+2. Fetches all services metadata in parallel (25 calls concurrently)
    - This gives us userId, caseId, legalTeam per service
 3. Filters to open services only, deduplicates by userId
-4. Fetches attorney data for each unique attorney (N calls)
-5. Writes attorney data points per user via data-collection API
+4. Pre-fetches all unique attorneys in parallel
+5. Writes attorney data points per user in parallel via data-collection API
 
 Usage:
-    python scripts/migrate_attorney_datapoints.py [--dry-run] [--limit N]
+    python scripts/migrate_attorney_datapoints.py [--dry-run] [--limit N] [--concurrency N]
 
 Environment variables (.env):
     BASE_URL           - API gateway base URL (e.g. https://api.platform.flaretechnologies.com)
@@ -23,7 +23,8 @@ import argparse
 import logging
 import os
 import sys
-import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from dotenv import load_dotenv
@@ -143,6 +144,151 @@ def add_user_data_points(user_id: str, data_points: dict[str, str]) -> None:
     resp.raise_for_status()
 
 
+def fetch_all_open_services(express_type_ids: list[str], concurrency: int) -> dict[str, dict]:
+    """Fetch open services for all express types in parallel. Returns user_id -> info mapping."""
+    user_to_info: dict[str, dict] = {}
+    lock = threading.Lock()
+    total_services = 0
+
+    def fetch_one(st_id: str) -> tuple[str, list[dict]]:
+        services = get_open_services_for_type(st_id)
+        return st_id, services
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = {executor.submit(fetch_one, st_id): st_id for st_id in express_type_ids}
+
+        for future in as_completed(futures):
+            st_id = futures[future]
+            try:
+                _, open_services = future.result()
+            except Exception as e:
+                logger.error("Failed to fetch services for type %s: %s", st_id, e)
+                continue
+
+            with lock:
+                for service in open_services:
+                    user_id = service.get("userId")
+                    case_id = service.get("caseId")
+                    if not user_id:
+                        continue
+
+                    attorney_id = None
+                    for member in service.get("legalTeam", []):
+                        if member.get("role") == RESPONSIBLE_ATTORNEY_ROLE:
+                            attorney_id = member.get("userId")
+                            break
+
+                    if not attorney_id:
+                        continue
+
+                    if user_id not in user_to_info:
+                        user_to_info[user_id] = {
+                            "caseId": case_id,
+                            "attorneyId": attorney_id,
+                            "serviceTypeId": st_id,
+                        }
+
+                total_services += len(open_services)
+
+    logger.info("Total open express services: %d", total_services)
+    logger.info("Unique users to process: %d", len(user_to_info))
+    return user_to_info
+
+
+def prefetch_attorneys(attorney_ids: set[str], concurrency: int) -> dict[str, dict | None]:
+    """Fetch all unique attorneys in parallel. Returns attorney_id -> data mapping."""
+    cache: dict[str, dict | None] = {}
+    lock = threading.Lock()
+    warned: set[str] = set()
+
+    logger.info("Pre-fetching %d unique attorneys (concurrency=%d)...", len(attorney_ids), concurrency)
+
+    def fetch_one(aid: str) -> tuple[str, dict | None]:
+        try:
+            return aid, get_attorney(aid)
+        except requests.HTTPError as e:
+            logger.error("Failed to fetch attorney %s: %s", aid, e)
+            return aid, None
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = {executor.submit(fetch_one, aid): aid for aid in attorney_ids}
+
+        for future in as_completed(futures):
+            aid, data = future.result()
+            with lock:
+                cache[aid] = data
+
+            # Warn about missing data (once per attorney)
+            if data:
+                attorney_data = data.get("attorneyData", {}) or {}
+                missing = []
+                if not (attorney_data.get("barDetails") or {}).get("barNumber"):
+                    missing.append("barNumber")
+                if not (attorney_data.get("lawFirm") or {}).get("phoneNumber"):
+                    missing.append("lawFirm.phoneNumber")
+                if not ((attorney_data.get("lawFirm") or {}).get("address") or {}).get("street"):
+                    missing.append("lawFirm.address")
+                if missing and aid not in warned:
+                    warned.add(aid)
+                    logger.warning("Attorney %s missing data: %s", aid, ", ".join(missing))
+
+    fetched = sum(1 for v in cache.values() if v is not None)
+    logger.info("Fetched %d/%d attorneys successfully", fetched, len(attorney_ids))
+    return cache
+
+
+def write_data_points_parallel(
+    users_to_process: list[tuple[str, dict]],
+    attorney_cache: dict[str, dict | None],
+    dry_run: bool,
+    concurrency: int,
+) -> dict[str, int]:
+    """Write data points for all users in parallel. Returns stats."""
+    stats = {"success": 0, "skipped": 0, "error": 0, "dry_run": 0}
+    lock = threading.Lock()
+    processed = 0
+
+    def process_one(user_id: str, info: dict) -> tuple[str, str]:
+        attorney_id = info["attorneyId"]
+        attorney = attorney_cache.get(attorney_id)
+        if attorney is None:
+            return "error", user_id
+
+        data_points = build_attorney_data_points(attorney)
+        if not data_points:
+            return "skipped", user_id
+
+        if dry_run:
+            return "dry_run", user_id
+
+        try:
+            add_user_data_points(user_id, data_points)
+            return "success", user_id
+        except requests.HTTPError as e:
+            logger.error("Failed to write data points for user %s: %s", user_id, e)
+            return "error", user_id
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = {
+            executor.submit(process_one, user_id, info): user_id
+            for user_id, info in users_to_process
+        }
+
+        for future in as_completed(futures):
+            status, user_id = future.result()
+            with lock:
+                stats[status] += 1
+                processed += 1
+                if processed % 100 == 0:
+                    logger.info(
+                        "  Progress: %d/%d (success=%d, skip=%d, err=%d)",
+                        processed, len(users_to_process),
+                        stats["success"], stats["skipped"], stats["error"],
+                    )
+
+    return stats
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Migrate attorney data points for express open cases"
@@ -158,6 +304,12 @@ def main():
         default=0,
         help="Limit number of users to process (0 = all)",
     )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=10,
+        help="Number of concurrent requests (default: 10)",
+    )
     args = parser.parse_args()
 
     if not BASE_URL:
@@ -172,55 +324,16 @@ def main():
 
     logger.info("Base URL: %s", BASE_URL)
     logger.info("Schema ID: %s", DOCOLOCO_SCHEMA_ID)
+    logger.info("Concurrency: %d", args.concurrency)
     if args.dry_run:
         logger.info("DRY RUN MODE - no data will be written")
 
     # Step 1: Get express service type IDs
     express_type_ids = get_express_service_type_ids()
 
-    # Step 2: For each express service type, get open services
-    # Collect unique user -> (caseId, attorneyId) mappings
-    user_to_info: dict[str, dict] = {}
-    total_services = 0
-
-    for i, st_id in enumerate(express_type_ids):
-        logger.info("Fetching services for express type %d/%d: %s", i + 1, len(express_type_ids), st_id)
-        try:
-            open_services = get_open_services_for_type(st_id)
-        except requests.HTTPError as e:
-            logger.error("  Failed to fetch services for type %s: %s", st_id, e)
-            continue
-
-        for service in open_services:
-            user_id = service.get("userId")
-            case_id = service.get("caseId")
-            if not user_id:
-                continue
-
-            # Find responsible attorney from legalTeam
-            attorney_id = None
-            for member in service.get("legalTeam", []):
-                if member.get("role") == RESPONSIBLE_ATTORNEY_ROLE:
-                    attorney_id = member.get("userId")
-                    break
-
-            if not attorney_id:
-                continue
-
-            # Keep first occurrence per user (dedup)
-            if user_id not in user_to_info:
-                user_to_info[user_id] = {
-                    "caseId": case_id,
-                    "attorneyId": attorney_id,
-                    "serviceTypeId": st_id,
-                }
-
-        total_services += len(open_services)
-        logger.info("  Found %d open services", len(open_services))
-        time.sleep(0.05)
-
-    logger.info("Total open express services: %d", total_services)
-    logger.info("Unique users to process: %d", len(user_to_info))
+    # Step 2: Fetch all open services in parallel
+    logger.info("Fetching open services for all express types...")
+    user_to_info = fetch_all_open_services(express_type_ids, args.concurrency)
 
     # Apply limit
     users_to_process = list(user_to_info.items())
@@ -228,78 +341,13 @@ def main():
         users_to_process = users_to_process[: args.limit]
         logger.info("Limited to %d users", len(users_to_process))
 
-    # Step 3: Cache attorneys to avoid redundant fetches
-    attorney_cache: dict[str, dict | None] = {}
-    stats = {"success": 0, "skipped": 0, "error": 0, "dry_run": 0}
+    # Step 3: Pre-fetch all unique attorneys in parallel
+    unique_attorney_ids = {info["attorneyId"] for _, info in users_to_process}
+    attorney_cache = prefetch_attorneys(unique_attorney_ids, args.concurrency)
 
-    for i, (user_id, info) in enumerate(users_to_process):
-        attorney_id = info["attorneyId"]
-        case_id = info["caseId"]
-
-        if (i + 1) % 50 == 0 or i == 0:
-            logger.info(
-                "Processing user %d/%d: %s (case: %s, attorney: %s)",
-                i + 1, len(users_to_process), user_id, case_id, attorney_id,
-            )
-
-        # Fetch attorney (cached)
-        if attorney_id not in attorney_cache:
-            try:
-                attorney_cache[attorney_id] = get_attorney(attorney_id)
-            except requests.HTTPError as e:
-                logger.error("  Failed to fetch attorney %s: %s", attorney_id, e)
-                attorney_cache[attorney_id] = None
-                stats["error"] += 1
-                continue
-
-        attorney = attorney_cache[attorney_id]
-        if attorney is None:
-            stats["error"] += 1
-            continue
-
-        # Build data points
-        data_points = build_attorney_data_points(attorney)
-        if not data_points:
-            stats["skipped"] += 1
-            continue
-
-        # Check for missing attorney data
-        attorney_data = attorney.get("attorneyData", {}) or {}
-        missing = []
-        if not (attorney_data.get("barDetails") or {}).get("barNumber"):
-            missing.append("barNumber")
-        if not (attorney_data.get("lawFirm") or {}).get("phoneNumber"):
-            missing.append("lawFirm.phoneNumber")
-        if not ((attorney_data.get("lawFirm") or {}).get("address") or {}).get("street"):
-            missing.append("lawFirm.address")
-        if missing and attorney_id not in getattr(main, '_warned_attorneys', set()):
-            if not hasattr(main, '_warned_attorneys'):
-                main._warned_attorneys = set()
-            main._warned_attorneys.add(attorney_id)
-            logger.warning(
-                "Attorney %s missing data: %s",
-                attorney_id,
-                ", ".join(missing),
-            )
-
-        if args.dry_run:
-            stats["dry_run"] += 1
-            if (i + 1) % 50 == 0 or i == 0:
-                logger.info(
-                    "  DRY_RUN: would write %d data points for user %s (%s)",
-                    len(data_points), user_id, list(data_points.keys()),
-                )
-            continue
-
-        # Write data points
-        try:
-            add_user_data_points(user_id, data_points)
-            stats["success"] += 1
-        except requests.HTTPError as e:
-            logger.error("  Failed to write data points for user %s: %s", user_id, e)
-            stats["error"] += 1
-
-        time.sleep(0.05)
+    # Step 4: Write data points in parallel
+    logger.info("Writing data points for %d users...", len(users_to_process))
+    stats = write_data_points_parallel(users_to_process, attorney_cache, args.dry_run, args.concurrency)
 
     # Summary
     logger.info("=" * 50)
