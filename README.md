@@ -198,3 +198,57 @@ node ~/src/dannys-scripts/scripts/fix_pdf_font_sizes.js ~/Downloads/fl140.pdf ~/
 ```
 
 **Use case**: When CA court eform templates have fields with inconsistent font sizes (e.g., RESPONDENT field renders much larger than other fields), run this script on the source PDF before uploading to S3. The fixed template will render consistently when filled by documents-ms.
+
+### Data-Collection v2 — Pair Migration Tooling (AS-4246)
+
+`as-4246-dc2-pair-migration/pair_migration.py` derives a per-(practiceArea, jurisdiction) data
+schema from the datapoints a pair's forms actually reference, and copies that pair's datapoints
+into the new partition. Used by the Milestone 1 test plan, steps P5 and P8.
+
+Every subcommand is **dry-run by default**; a write needs `--apply`. `--apply` writes a JSON log
+under `as-4246-dc2-pair-migration/logs/` (git-ignored — it holds user ids) which `revert` replays.
+
+```bash
+export MONGO_URI='<staging URI>'   # credentials: ~/.claude/.claude.local.md — never echo it
+
+# 1. derive the pair's schema (immigration / US-FED). Reviews the plan, writes nothing.
+./pair_migration.py derive-schema \
+    --service-type-id 6a134e51e7fb6df0f3c9b325 \
+    --service-type-id 6a1c17dc227c6489bd84c2ce \
+    --service-type-id 6a2026c24086ae2d3bafc6be \
+    --extra-form-key 'mini-q:IMM-I-130-beneficiary' \
+    --extra-form-key 'mini-q:beneficiary-aos' \
+    --key immigration-us-fed --name 'Immigration (US-FED)' \
+    --out /tmp/immigration-us-fed.json
+
+./pair_migration.py derive-schema ... --apply        # creates the dataschemas row
+
+# 2. size the copy before the schema row exists, then copy a test user's answers
+./pair_migration.py copy-datapoints --to-keys-file /tmp/immigration-us-fed.json
+./pair_migration.py copy-datapoints --to-key immigration-us-fed --user-id <userId> --apply
+
+# 3. undo either step from its log
+./pair_migration.py revert --log logs/20260910-201500-copy-datapoints.json --apply
+```
+
+**Field set** = the union of the `properties` on the live forms attached to those service types
+(`serviceResources[].resourceKey` → `draftscatalog` → `formKey` → `forms`), plus the
+`flare_condition` / `allOf` gating closure (a port of
+`libs/data-collection-utils/src/lib/field-dependencies.ts`), plus anything a `--questionnaire-key`
+references. Forms that a draft resource doesn't reach — mini-questionnaires — need
+`--extra-form-key`.
+
+**Rules it enforces**:
+
+- The row is created by **`key`**: that is the path the catalog binding
+  `stateInfo[state].dataSchemaKey` resolves through. `DataSchema.dataSchemaId` is dead code
+  (AS-4239) and is never written — the id everything else references is the document `_id`.
+- **Copy, don't move.** Source rows are never touched, so reverting a flip is just unbinding.
+- The unit is **(user × the new schema's key set)**, never the whole user — a user's datapoints
+  may span practice areas.
+- `source` is copied **verbatim**; encrypted values need no re-encryption (the key derives from
+  `userId`, not the schema).
+- Re-running a copy is idempotent: keys already in the target partition are counted, not doubled.
+- Applying to the whole population requires `--all-users` on top of `--apply`.
+
+Self-check for the closure port (no DB needed): `./test_pair_migration.py`.
