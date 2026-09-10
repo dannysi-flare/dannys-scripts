@@ -38,13 +38,36 @@ Workspace packages are detected by their symlink target rather than an allowlist
 workspace root (`apps/*`, `libs/*`, `libs/mongo-schemas/*`, `libs/data-layer/*`, `testing/*`,
 `tools/*`) is handled without listing them.
 
-`--check` verifies the result and is worth running if a typecheck reports a symbol you know exists:
+### `--check` answers two questions
+
+Two different things go wrong, and only one of them is about links.
+
+**Where does `@vinny/*` point.** Worth running whenever a typecheck reports a symbol you know you
+just wrote:
 
 ```
 INFO data-collection-types -> /Users/you/src/vinny-worktrees/my-branch/libs/data-collection-types OK
 ```
 
-A `WRONG WORKTREE` line there means you are looking at the donor's code.
+A `WRONG WORKTREE` line means you are compiling the donor's code.
+
+**Is anything the branch declares simply absent.** This is lockfile drift: the donor installed
+before your branch — or `main` — added a dependency, so the package is not there at all. It
+surfaces a long way from the cause. `eslint-plugin-local-rules` is the one that bites in practice,
+because eslint fails resolving the plugin before it lints anything, which reads like a broken
+eslint config.
+
+Measured against a donor whose install predates current `main`: `origin/main` declares 238 root
+dependencies, 6 of which were missing — `eslint-plugin-local-rules`, `amqplib`,
+`amqp-connection-manager`, `@node-oauth/oauth2-server`, `@types/cookie`, `portless`. So:
+
+```
+ERROR 6 declared dependencies are absent — the donor's install predates them, so run a real
+      `yarn install` in this worktree: @node-oauth/oauth2-server, @types/cookie, amqplib, ...
+```
+
+A branch off a `main` that has moved needs a real `yarn install`. This script is for worktrees
+sharing a base with the donor.
 
 ### Caveat
 
