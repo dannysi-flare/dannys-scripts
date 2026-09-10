@@ -252,3 +252,23 @@ references. Forms that a draft resource doesn't reach — mini-questionnaires �
 - Applying to the whole population requires `--all-users` on top of `--apply`.
 
 Self-check for the closure port (no DB needed): `./test_pair_migration.py`.
+
+### AI Recipes — Schema Key Backfill (AS-4276)
+
+`as-4276-airecipes-schema-key/backfill_recipe_schema_key.py` pins every existing `airecipes`
+document to the schema it was authored against, closing the window where a recipe with no
+`dataSchemaKey` matches any schema.
+
+```bash
+export MONGO_URI='<staging URI>'    # or the repo .env; never echoed
+
+./backfill_recipe_schema_key.py backfill              # dry run: counts + the keys it would set
+./backfill_recipe_schema_key.py backfill --apply      # writes, and logs the recipe ids it touched
+./backfill_recipe_schema_key.py revert --log logs/<run>.json --apply
+```
+
+The value comes from the `dataschemas` document (`--schema-id`, default docoloco
+`66dee37286565b000812bb21`), **never hardcoded** — that document's `key` is `"Docoloco Schema"`
+while its `name` is `"docoloco"`, so guessing gets it backwards. Recipes already bound to a
+different schema are reported and left alone, and `revert` only unsets rows that still hold the
+value its own log recorded.
