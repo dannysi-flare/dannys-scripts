@@ -1,8 +1,8 @@
 # DC v2 resolved-output harness
 
-Two read-only tools behind the data-collection v2 parity check.
+Three tools behind the data-collection v2 parity check — two read-only, one that seeds.
 
-Both scripts read the API key from `X_API_KEY` (environment, or the repo's `.env` — see
+All three read the API key from `X_API_KEY` (environment, or the repo's `.env` — see
 `env.example`) and refuse to send it anywhere but a Flare host. Nothing is hardcoded.
 
 ## `record_fixture.py` — record the pipeline's input
@@ -53,3 +53,41 @@ properties two forms disagree about. `flare_displayOrder` is excluded because it
 Latest output is checked in beside the scripts: 136 of 144 forms carry presentation text inline;
 679 properties disagree across all forms, 17 across the immigration pilot — and those 17 are
 audience wording (petitioner "you" vs "the beneficiary"), not authoring drift.
+
+## `seed_state_questionnaire.py` — make parity structural
+
+Builds a v2 state questionnaire out of today's aggregated output for a (practiceArea,
+jurisdiction) pair, so the diff harness starts green and every later diff is deliberate.
+Dry-run by default.
+
+```bash
+./seed_state_questionnaire.py --out ~/dc2/immigration-us-fed.json     # inspect, write nothing
+./seed_state_questionnaire.py --apply --mongo-uri "$MONGODB_STAGING_URI"
+```
+
+Where each piece of the document comes from:
+
+| Field | Source |
+|---|---|
+| tree (sections → buckets → subBuckets) | `flare_questionnaire` / `flare_bucket` / `flare_subBucket`; no `flare_questionnaire` means `GENERAL`, which is what every questionnaire authored today does |
+| `order` | **derived, never authored** — `$defs` key order via `flare_targetProperty`, narrowed to the fields the forms in play use, then renumbered 1..N (`data-collection-utils.ts:429-527`) |
+| `presentation`, `required` | `$defs` first, then each form's inline copy on top in `--form-key` order, because today's `aggregateFormSchemas` lets form-inline annotations win |
+
+`required` is **advisory** — "the client must answer this". Nothing gates submission on it.
+
+Two things the run reports rather than deciding quietly:
+
+- **skipped fields** — a datapoint with no `flare_bucket` or `flare_subBucket` has nowhere to go.
+  Inventing one would be authoring, not seeding. The immigration pilot skips 13 of 507.
+- **disagreements** — where two forms annotate one field differently the last `--form-key` wins,
+  and every case is printed. The pilot's 8 are audience wording plus one real inconsistency
+  (`attorneyUscisNumber`), matching `lint_form_flare_text.py`.
+
+`--status ACTIVE` is the enablement act for the pair, not just authoring — seed as `DRAFT` and
+publish deliberately.
+
+Self-check (no network, no Mongo):
+
+```bash
+./seed_state_questionnaire.py --demo
+```
