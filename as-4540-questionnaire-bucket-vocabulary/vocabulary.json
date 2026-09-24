@@ -1,0 +1,767 @@
+[
+  {
+    "type": "BUCKET",
+    "name": "PERSONAL_INFORMATION",
+    "description": "General personal information such as address history and residency questions used for jurisdiction, venue, and required disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "OPPOSING_PARTY_INFORMATION",
+    "description": "Information about the opposing party in the matter."
+  },
+  {
+    "type": "BUCKET",
+    "name": "LEGAL_DETAILS",
+    "description": "Legal details relevant to the matter."
+  },
+  {
+    "type": "BUCKET",
+    "name": "FAMILY_BACKGROUND",
+    "description": "Family background information relevant to the matter."
+  },
+  {
+    "type": "BUCKET",
+    "name": "CUSTODY_ARRANGEMENTS",
+    "description": "Custody arrangement details for children involved in the matter."
+  },
+  {
+    "type": "BUCKET",
+    "name": "ATTORNEY_ONLY",
+    "description": "Attorney-only or internal operational fields that support drafting strategy, court configuration, and case management (not typically collected directly from clients)."
+  },
+  {
+    "type": "BUCKET",
+    "name": "CLIENT",
+    "description": "Client-facing intake information about the person seeking services, including identity, contact details, and background used across generated documents and workflows."
+  },
+  {
+    "type": "BUCKET",
+    "name": "OPPOSING_PARTY",
+    "description": "Information about the other party in the matter (e.g., spouse or co-parent), used to complete pleadings, disclosures, and service/case details where required."
+  },
+  {
+    "type": "BUCKET",
+    "name": "MARRIAGE",
+    "description": "Details about the marriage and separation timeline, agreements, and related facts that drive divorce eligibility, pleading content, and requested relief."
+  },
+  {
+    "type": "BUCKET",
+    "name": "CHILDREN",
+    "description": "Information about children involved in the matter, including identities, residences, and custody/support context used across filings and required disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "ASSETS",
+    "description": "Information about property, vehicles, benefits, and other assets relevant to equitable division and required financial disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "CASE_DETAILS",
+    "description": "Case-level procedural and factual details (service, orders, hearings, related cases, safety concerns) used to prepare filings and manage workflow requirements."
+  },
+  {
+    "type": "BUCKET",
+    "name": "HOUSEHOLD",
+    "description": "Household composition and contributions, used for financial disclosures, budgeting, and support-related calculations where applicable."
+  },
+  {
+    "type": "BUCKET",
+    "name": "TAXES",
+    "description": "Tax filing and withholding information used for financial disclosures and income/expense analysis where applicable."
+  },
+  {
+    "type": "BUCKET",
+    "name": "INCOME",
+    "description": "Income sources and amounts (employment, self-employment, benefits, investments), used for disclosures and support-related analyses."
+  },
+  {
+    "type": "BUCKET",
+    "name": "EXPENSES",
+    "description": "Recurring household and personal expenses used for financial disclosures, budgeting, and support-related analyses."
+  },
+  {
+    "type": "BUCKET",
+    "name": "JOINT_ASSETS",
+    "description": "Details about assets owned jointly by the parties, used for property division and related financial disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "JOINT_DEBTS",
+    "description": "Details about debts owed jointly by the parties, used for financial disclosures and allocation in the case."
+  },
+  {
+    "type": "BUCKET",
+    "name": "PERSONAL_ASSETS",
+    "description": "Details about assets considered separate/personal to one party, used in property characterization and financial disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "PERSONAL_DEBTS",
+    "description": "Details about debts considered separate/personal to one party, used in liability characterization and financial disclosures."
+  },
+  {
+    "type": "BUCKET",
+    "name": "DEBTS",
+    "description": "Information about liabilities and debts relevant to financial disclosures and division between the parties."
+  },
+  {
+    "type": "BUCKET",
+    "name": "PETITIONER",
+    "description": "Information about the U.S. petitioner in immigration workflows, used to populate petition forms and supporting documentation."
+  },
+  {
+    "type": "BUCKET",
+    "name": "BENEFICIARY",
+    "description": "Information about the beneficiary in immigration workflows, used to populate petition forms and supporting documentation."
+  },
+  {
+    "type": "BUCKET",
+    "name": "BILLING",
+    "description": "Billing-related information for case management and invoicing."
+  },
+  {
+    "type": "BUCKET",
+    "name": "OTHER_PARTIES",
+    "description": "Information about other parties involved in the matter."
+  },
+  {
+    "type": "BUCKET",
+    "name": "RELATIONSHIP",
+    "description": "Relationship history and context used in immigration workflows (and supporting evidence requirements) to complete petition forms."
+  },
+  {
+    "type": "BUCKET",
+    "name": "APPLICANT",
+    "description": ""
+  },
+  {
+    "type": "BUCKET",
+    "name": "DOCUMENTS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CONTACT_INFORMATION",
+    "description": "Contact information for the client."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PERSONAL_DETAILS",
+    "description": "Core personal identity and contact details used throughout intake and to populate standard form fields."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "EMPLOYMENT_DETAILS",
+    "description": "Employment status, employer information, and related work history used for disclosures and income context."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MARRIAGE_DETAILS",
+    "description": "Key marriage facts such as dates, locations, and living/separation details used in pleadings and eligibility checks."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ADDITIONAL_INFORMATION",
+    "description": "Additional context questions that affect requested relief, optional requests, or edge-case requirements."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CHILDREN_PERSONAL_DETAILS",
+    "description": "Personal details for children involved in the matter."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CHILDREN_COURT_ORDERS",
+    "description": "Court orders related to children involved in the matter."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ADDRESS_HISTORY",
+    "description": "Current and prior addresses used for jurisdiction/venue and required disclosures (e.g., last 5 years where applicable)."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CHILD_HEALTH_INSURANCE",
+    "description": "Health insurance coverage information for children used in disclosures and orders."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ASSET_DETAILS",
+    "description": "General asset details used for characterization and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "JOINT_BENEFITS",
+    "description": "Shared benefit policies and accounts (e.g., insurance, retirement) used for disclosures and division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "KEY_DETAILS",
+    "description": "High-signal case intake details that drive workflow branching and required filings."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "EXISTING_COURT_ORDERS",
+    "description": "Details about existing orders, related cases, or events that affect the current matter and filings."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PROPERTY",
+    "description": "Property-related questions and details used for characterization and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "JOINTLY_OWNED_VEHICLES",
+    "description": "Details about jointly owned vehicles used for asset reporting and division."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "JOINTLY_OWNED_PROPERTY",
+    "description": "Details about jointly owned real property used for asset reporting and division."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "HEALTH_INSURANCE",
+    "description": "Health insurance coverage information relevant to children or the parties, used in disclosures and orders."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MINOR_CHILDREN",
+    "description": "Identity and basic details for minor children relevant to the matter."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "EDUCATION",
+    "description": "Educational background and credentials that may be required for certain disclosures or context."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "JOINT_ASSETS_AND_DEBTS",
+    "description": "Subsection covering Joint Assets And Debts information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "HOUSEHOLD_INFO",
+    "description": "People in the household and their relationship/financial participation used for budgeting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "FILING_INFO",
+    "description": "Tax filing details used for financial disclosures and income analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "EMPLOYMENT_INCOME",
+    "description": "Income from employment or self-employment used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFITS_AND_OTHER_INCOME",
+    "description": "One-time or miscellaneous income sources used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OPPOSING_PARTY_INCOME",
+    "description": "The opposing party's average monthly income from non-wage sources (unemployment, worker's comp, disability, social security, alimony, interest, SSI, child support, benefits received for children) used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PAST_THREE_YEARS",
+    "description": "Yearly base income and overtime/commissions/bonuses for the client and the opposing party over the current year and the three prior years, with the referenced year, used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PROPERTY_AND_REAL_ESTATE",
+    "description": "Housing and property cost details used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "EVERYDAY_EXPENSES",
+    "description": "Day-to-day living expenses used for expense reporting and budgeting."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "INSURANCE_AND_OTHER_POLICIES",
+    "description": "Insurance policies and related recurring costs used for disclosures and expense reporting."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "HOUSING_AND_UTILITIES",
+    "description": "Recurring housing and utility costs used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CHILDCARE",
+    "description": "Childcare and education-related expenses used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MEDICAL_EXPENSES",
+    "description": "Subsection covering Medical Expenses information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MEDICAL",
+    "description": "Subsection covering Medical information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OTHER_EXPENSES",
+    "description": "Subsection covering Other Expenses information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "SPECIAL_CIRCUMSTANCES",
+    "description": "Subsection covering Special Circumstances information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "GENERAL",
+    "description": "General expense information used for financial disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ACCOUNTS",
+    "description": "Banking and financial account information used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "TAXES",
+    "description": "Tax-related asset information used for disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "INVESTMENTS",
+    "description": "Investment-related debt information used for disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BUSINESS",
+    "description": "Business ownership and business-asset details used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OTHER_ASSETS",
+    "description": "Subsection covering Other Assets information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OTHER_DEBTS",
+    "description": "Subsection covering Other Debts information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "LOANS_AND_CREDIT_CARDS",
+    "description": "Subsection covering Loans And Credit Cards information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "INVESTMENTS_AND_PASSIVE_INCOME",
+    "description": "Non-wage income (investments, benefits, retirement, trusts, alimony) used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CUSTODY_DETAILS",
+    "description": "Subsection covering Custody Details information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_PERSONAL_DETAILS",
+    "description": "Subsection covering Petitioner's Personal Details information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_MAILING_ADDRESS",
+    "description": "Current and intended address details used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_ADDRESS_HISTORY",
+    "description": "Address history details used to complete jurisdiction/eligibility requirements and to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_EMPLOYMENT_HISTORY",
+    "description": "Employment history details used to populate form sections and provide background context."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_BIOGRAPHIC_INFORMATION",
+    "description": "Biographic information for the petitioner used in forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_CRIMINAL_HISTORY",
+    "description": "Criminal history and related disclosures used to determine required disclosures and populate applicable form sections."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_PARENTAL_INFORMATION",
+    "description": "Parental information for the petitioner used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_OTHER_INFORMATION",
+    "description": "Other information for the petitioner used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_PHYSICAL_ADDRESS",
+    "description": "Current and intended address details used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_FAMILY_DETAILS",
+    "description": "Family member details used to populate forms and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_MARITAL_HISTORY",
+    "description": "Prior marriage history details used to complete form sections and supporting documentation requirements."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_IMMIGRATION_STATUS",
+    "description": "Immigration status details used to populate immigration forms and determine required supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_APPLICATION_DETAILS",
+    "description": "Application-level details for the petitioner used to populate petition forms and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PETITIONER'S_FINANCIAL_DETAILS",
+    "description": "Financial details for the petitioner used for affidavit of support and required financial disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_PERSONAL_DETAILS",
+    "description": "Subsection covering Beneficiary's Personal Details information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_MAILING_ADDRESS",
+    "description": "Current and intended address details used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_ADDRESS_HISTORY",
+    "description": "Address history details used to complete jurisdiction/eligibility requirements and to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_EMPLOYMENT_HISTORY",
+    "description": "Employment history details used to populate form sections and provide background context."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_IMMIGRATION_INFORMATION",
+    "description": "Immigration information for the beneficiary used in petition forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_IMMIGRATION_STATUS",
+    "description": "Immigration status details used to populate immigration forms and determine required supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_INTENDED_ADDRESS",
+    "description": "Intended address details for the beneficiary used in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_INTENDED_ADDRESS_IN_THE_U.S.",
+    "description": "Current and intended address details used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_PARENTAL_INFORMATION",
+    "description": "Parental information for the beneficiary used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_CHILDREN_INFORMATION",
+    "description": "Children information for the beneficiary used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_OTHER_INFORMATION",
+    "description": "Other information for the beneficiary used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_PHYSICAL_ADDRESS",
+    "description": "Current and intended address details used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_FAMILY_DETAILS",
+    "description": "Family member details used to populate forms and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_MARITAL_HISTORY",
+    "description": "Prior marriage history details used to complete form sections and supporting documentation requirements."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_INFO_IN_NATIVE_LANGUAGE",
+    "description": "Subsection covering Beneficiary's Info In Native Language information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_ADDITIONAL_QUESTIONS",
+    "description": "Additional questions for the beneficiary used to complete form sections and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_APPLICATION_DETAILS",
+    "description": "Application-level details for the beneficiary used to populate petition forms and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_FINANCIAL_DETAILS",
+    "description": "Financial details for the beneficiary used for required financial disclosures in immigration workflows."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_HOUSEHOLD_DETAILS",
+    "description": "Household composition details for the beneficiary used to populate forms and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_LAST_ENTRY",
+    "description": "Details about the beneficiary's last entry into the United States used to populate immigration form sections."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_LAST_FOREIGN_ADDRESS",
+    "description": "The beneficiary's last foreign address used to populate address sections in generated forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY'S_VOCATIONAL_HISTORY",
+    "description": "Employment and vocational history for the beneficiary used to populate form sections and provide background context."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BENEFICIARY_ORGANIZATIONS",
+    "description": "Organizations and group memberships associated with the beneficiary used to populate applicable form sections."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "NATIVE_ALPHABET",
+    "description": "Native alphabet information for the beneficiary used in forms."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "RELATIONSHIP",
+    "description": "General relationship information used in workflows."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "RELATIONSHIP_DETAILS",
+    "description": "Relationship details and history used to populate narrative sections and supporting evidence requirements."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "RELATIONSHIP_HISTORY",
+    "description": "Relationship details and history used to populate narrative sections and supporting evidence requirements."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MARRIAGE_BROKER",
+    "description": "Marriage broker information used in immigration workflows."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MARRIAGE_BROKER_SERVICES",
+    "description": "Subsection covering Marriage Broker Services information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "INTERPRETER",
+    "description": "Interpreter information used in forms and documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "INTERPRETATION_SERVICES",
+    "description": "Subsection covering Interpretation Services information used across intake and form generation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BILLING_INFO",
+    "description": "Billing information for case management."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "BILLING_DETAILS",
+    "description": "Detailed billing information for invoicing."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OTHER_INFORMATION",
+    "description": "Other case-related information used in filings and workflow."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_PERSONAL_DETAILS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_MAILING_ADDRESS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_PHYSICAL_ADDRESS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_EMPLOYMENT_DETAILS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICATION_DETAILS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_ADDITIONAL_INFORMATION",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "APPLICANT_DOCUMENTS",
+    "description": ""
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CASE_AGREEMENTS",
+    "description": "Agreements reached in the case used to populate filings and supporting documentation."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ATTORNEY_INFORMATION",
+    "description": "Whether the opposing party is represented by an attorney and, if so, the attorney's contact details: name, address, phone, and email. All fields except the initial yes/no question are conditional on opposingPartyAttorneyQuestion = TRUE."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MANDATORY_DEDUCTIONS",
+    "description": "Mandatory payroll deductions (e.g., taxes, social security, union dues) used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "VOLUNTARY_DEDUCTIONS",
+    "description": "Voluntary payroll deductions (e.g., retirement contributions, insurance premiums) used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "FOOD_AND_SUPPLIES",
+    "description": "Food, groceries, and household supply expenses used for expense reporting and budgeting."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "HEALTH_CARE",
+    "description": "Health care costs and insurance premiums used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "TRANSPORTATION",
+    "description": "Transportation costs such as vehicle payments, fuel, insurance, and public transit used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "CHILDRENS_EXPENSES",
+    "description": "Children's expenses such as education, activities, and care costs used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "SUPPORT",
+    "description": "Support payments made to others (e.g., child or spousal support) used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "HOUSING",
+    "description": "Housing costs such as rent, mortgage, and related payments used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "UTILITIES",
+    "description": "Utility costs such as electricity, water, gas, and internet used for expense reporting and disclosures."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MAINTENANCE_AND_CHILD_SUPPORT",
+    "description": "Maintenance (spousal) and child support obligations used for disclosures and support analysis."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "STOCKS_AND_INVESTMENTS",
+    "description": "Stocks, brokerage holdings, and other investments used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "PENSION_AND_RETIREMENT_FUNDS",
+    "description": "Pension plans and retirement fund accounts used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "MISCELLANEOUS_ASSETS",
+    "description": "Miscellaneous assets that do not fall into a specific category, used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "SERVING_ADDRESS_DETAILS",
+    "description": "Details the client provided about the opposing party primary address for serving: apartment or unit number, best times to find them, and address notes."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "ADDITIONAL_SERVING_DETAILS",
+    "description": "Further details the client provided for serving the opposing party: backup address, date of birth, and appearance notes."
+  },
+  {
+    "type": "SUB_BUCKET",
+    "name": "OTHER",
+    "description": "Other assets that do not fall into a specific category, used for disclosures and property division where applicable."
+  },
+  {
+    "type": "SECTION",
+    "name": "GENERAL",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "FINANCIAL_DISCLOSURES",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "BENEFICIARY",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "INCOME",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "EXPENSES",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "ASSETS",
+    "description": ""
+  },
+  {
+    "type": "SECTION",
+    "name": "DEBTS",
+    "description": ""
+  }
+]
